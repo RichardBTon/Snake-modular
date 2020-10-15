@@ -5,6 +5,7 @@ import {
   snakePartClassCSS,
   pxPerSquare,
   SnakePart,
+  Apple,
 } from "./snake.js";
 
 let tailCoords = [
@@ -27,7 +28,8 @@ let tailCoords = [
 ];
 
 let snake = new Snake(5, 5, tailCoords, pxPerSquare, snakeBox);
-snake.extendTail();
+let apple = new Apple(8, 5, pxPerSquare, snakeBox);
+// apple.setRandomPos();
 // let snakePart = new SnakePart(7, 7, pxPerSquare);
 window.addEventListener("keydown", (e) => {
   keyMove(e, snake);

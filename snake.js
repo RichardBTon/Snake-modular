@@ -193,8 +193,17 @@ class Snake {
 }
 
 class Apple extends SnakePart {
-  constructor(x, y, pxPerSquare) {
+  constructor(x = 0, y = 0, pxPerSquare, container) {
     super(x, y, pxPerSquare);
+    this.container = container;
+    this.containerSizeX = this.container.offsetWidth / this.pxPerSquare;
+    this.containerSizeY = this.container.offsetHeight / this.pxPerSquare;
+    this.elm.classList.add("apple");
+  }
+  setRandomPos() {
+    this.x = Math.floor(Math.random() * (this.containerSizeX + 1));
+    this.y = Math.floor(Math.random() * (this.containerSizeY + 1));
+    this.move(this.x, this.y);
   }
 }
 // ============================================================
@@ -281,4 +290,12 @@ function arrowMove(e, snake) {
 // ============================================================
 // Exports
 
-export { Snake, keyMove, snakeBox, snakePartClassCSS, pxPerSquare, SnakePart };
+export {
+  Snake,
+  keyMove,
+  snakeBox,
+  snakePartClassCSS,
+  pxPerSquare,
+  SnakePart,
+  Apple,
+};
