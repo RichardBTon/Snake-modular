@@ -1,0 +1,32 @@
+:root {
+  --snakePartSize: 20px;
+  /* --position: static; */
+}
+
+.snake-container {
+  position: relative;
+}
+
+.snake-part {
+  /* position: var(--position); */
+  position: absolute;
+  background-color: red;
+  /* Background red skjer bare hvis det er noe galt med de videre klassene */
+  height: calc(var(--snakePartSize) - 2px);
+  width: calc(var(--snakePartSize) - 2px);
+  border-radius: 4px;
+  transition: 0s;
+}
+
+.blue-main {
+  background-color: #4b8bbe;
+}
+.blue-head {
+  background-color: #306998;
+}
+.yellow-main {
+  background-color: #ffe873;
+}
+.yellow-head {
+  background-color: #ffd43b;
+}
