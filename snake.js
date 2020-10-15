@@ -2,7 +2,7 @@
 // Initialisation
 
 let snakeBox = document.querySelector(".snake-container");
-// const pxPerSquare = 40;
+const pxPerSquare = 20;
 const snakePartClassCSS = "snake-part";
 
 // document.documentElement.style.setProperty(
@@ -36,16 +36,21 @@ class SnakePart {
     this.elm.style.left = `${windowX}px`;
     this.elm.style.top = `${windowY}px`;
   }
+
+  removeElm() {
+    this.elm.parentNode.removeChild(this.elm);
+  }
 }
 
 class Head extends SnakePart {
-  constructor(x, y, pxPerSquare, tailCoords) {
+  constructor(x, y, pxPerSquare, history = []) {
     super(x, y, pxPerSquare);
     this.pxPerSquare = pxPerSquare;
     this.elm.classList.add("blue-head");
 
-    this.history = tailCoords;
+    this.history = history;
   }
+
   moveHead(x, y) {
     const newHistory = this.history.slice();
     newHistory.unshift({ x: this.x, y: this.y });
@@ -73,7 +78,7 @@ class Snake {
     }
     this.tail = tail;
 
-    this.vx = 0;
+    this.vx = 1;
     this.vy = 0;
 
     this.moving = false;
@@ -83,11 +88,18 @@ class Snake {
       `${this.pxPerSquare}px`
     );
   }
+
   move() {
     this.start();
+
     let x = this.head.x + this.vx;
     let y = this.head.y + this.vy;
     [x, y] = this.applyBorders(x, y);
+
+    if (this.tailCrash(x, y)) {
+      this.stop();
+      return;
+    }
 
     this.head.moveHead(x, y);
     for (var i = 0; i < this.tail.length; i++) {
@@ -148,17 +160,43 @@ class Snake {
     }
     return [x, y];
   }
-  updateBorders(container) {
-    this.container = container;
-    this.containerWidth = Math.floor(
-      this.container.offsetWidth / this.pxPerSquare
-    );
-    this.containerHeight = Math.floor(
-      this.container.offsetHeight / this.pxPerSquare
-    );
+  extendTail() {
+    let x = this.tail[this.tail.length - 1].x;
+    let y = this.tail[this.tail.length - 1].y;
+    this.tail.push(new SnakePart(x, y, this.pxPerSquare));
+  }
+  // updateBorders(container) {
+  //   this.container = container;
+  //   this.containerWidth = Math.floor(
+  //     this.container.offsetWidth / this.pxPerSquare
+  //   );
+  //   this.containerHeight = Math.floor(
+  //     this.container.offsetHeight / this.pxPerSquare
+  //   );
+  // }
+  tailCrash(x, y) {
+    for (var i = 0; i < this.tail.length; i++) {
+      if (this.tail[i].x === x && this.tail[i].y === y) {
+        console.log("tailCrash!");
+        return true;
+      }
+    }
+    return false;
+  }
+
+  removeSnake() {
+    this.head.removeElm();
+    for (var i = 0; i < this.tail.length; i++) {
+      this.tail[i].removeElm();
+    }
   }
 }
 
+class Apple extends SnakePart {
+  constructor(x, y, pxPerSquare) {
+    super(x, y, pxPerSquare);
+  }
+}
 // ============================================================
 // Customizable stuff
 
@@ -243,4 +281,4 @@ function arrowMove(e, snake) {
 // ============================================================
 // Exports
 
-export { Snake, keyMove, snakeBox, snakePartClassCSS };
+export { Snake, keyMove, snakeBox, snakePartClassCSS, pxPerSquare, SnakePart };
