@@ -1,11 +1,9 @@
 import {
-  Snake,
   keyMove,
   snakeBox,
   snakePartClassCSS,
   pxPerSquare,
-  SnakePart,
-  Apple,
+  SnakeGame,
 } from "./snake.js";
 
 let tailCoords = [
@@ -27,13 +25,11 @@ let tailCoords = [
   },
 ];
 
-let snake = new Snake(5, 5, tailCoords, pxPerSquare, snakeBox);
-let apple = new Apple(8, 5, pxPerSquare, snakeBox);
-// apple.setRandomPos();
-// let snakePart = new SnakePart(7, 7, pxPerSquare);
+let snakeGame = new SnakeGame(snakeBox, pxPerSquare, 5, 5, tailCoords, 8, 5);
+
 window.addEventListener("keydown", (e) => {
-  keyMove(e, snake);
+  keyMove(e, snakeGame);
   if (e.keyCode === 13) {
-    snake.removeSnake();
+    snakeGame.snake.removeSnake();
   }
 });

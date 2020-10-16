@@ -29,12 +29,15 @@ class SnakePart {
   }
 
   move(x, y) {
-    this.x = x;
-    this.y = y;
+    this.setMove(x, y);
     let windowX = this.x * this.pxPerSquare;
     let windowY = this.y * this.pxPerSquare;
     this.elm.style.left = `${windowX}px`;
     this.elm.style.top = `${windowY}px`;
+  }
+  setMove(x, y) {
+    this.x = x;
+    this.y = y;
   }
 
   removeElm() {
@@ -51,11 +54,11 @@ class Head extends SnakePart {
     this.history = history;
   }
 
-  moveHead(x, y) {
+  setMoveHead(x, y) {
     const newHistory = this.history.slice();
     newHistory.unshift({ x: this.x, y: this.y });
     this.history = newHistory;
-    this.move(x, y);
+    this.setMove(x, y);
   }
 }
 
@@ -81,27 +84,24 @@ class Snake {
     this.vx = 1;
     this.vy = 0;
 
-    this.moving = false;
-
     document.documentElement.style.setProperty(
       "--snakePartSize",
       `${this.pxPerSquare}px`
     );
   }
 
-  move() {
-    this.start();
-
+  setMove() {
     let x = this.head.x + this.vx;
     let y = this.head.y + this.vy;
     [x, y] = this.applyBorders(x, y);
-
-    if (this.tailCrash(x, y)) {
-      this.stop();
-      return;
+    this.head.setMoveHead(x, y);
+    for (var i = 0; i < this.tail.length; i++) {
+      this.tail[i].setMove(this.head.history[i].x, this.head.history[i].y);
     }
+  }
 
-    this.head.moveHead(x, y);
+  moveSnakeElm(x, y) {
+    this.head.move(x, y);
     for (var i = 0; i < this.tail.length; i++) {
       this.tail[i].move(this.head.history[i].x, this.head.history[i].y);
     }
@@ -128,19 +128,6 @@ class Snake {
     this.vy = 1;
   }
 
-  start() {
-    if (this.moving) return;
-    // console.log("starter");
-    this.moving = true;
-    let move = () => this.move();
-    this.gameLoop = setInterval(move, 200);
-  }
-  stop() {
-    if (!this.moving) return;
-    // console.log("stopper");
-    this.moving = false;
-    clearInterval(this.gameLoop);
-  }
   applyBorders(x, y) {
     // top border
     if (y < 0) {
@@ -161,19 +148,11 @@ class Snake {
     return [x, y];
   }
   extendTail() {
-    let x = this.tail[this.tail.length - 1].x;
-    let y = this.tail[this.tail.length - 1].y;
+    let x = this.head.history[this.tail.length].x;
+    let y = this.head.history[this.tail.length].y;
     this.tail.push(new SnakePart(x, y, this.pxPerSquare));
   }
-  // updateBorders(container) {
-  //   this.container = container;
-  //   this.containerWidth = Math.floor(
-  //     this.container.offsetWidth / this.pxPerSquare
-  //   );
-  //   this.containerHeight = Math.floor(
-  //     this.container.offsetHeight / this.pxPerSquare
-  //   );
-  // }
+
   tailCrash(x, y) {
     for (var i = 0; i < this.tail.length; i++) {
       if (this.tail[i].x === x && this.tail[i].y === y) {
@@ -201,101 +180,111 @@ class Apple extends SnakePart {
     this.elm.classList.add("apple");
   }
   setRandomPos() {
-    this.x = Math.floor(Math.random() * (this.containerSizeX + 1));
-    this.y = Math.floor(Math.random() * (this.containerSizeY + 1));
+    this.x = Math.floor(Math.random() * this.containerSizeX);
+    this.y = Math.floor(Math.random() * this.containerSizeY);
     this.move(this.x, this.y);
   }
 }
-// ============================================================
-// Customizable stuff
 
-let tailCoords = [
-  {
-    x: 23,
-    y: 9,
-  },
-  {
-    x: 24,
-    y: 9,
-  },
-  {
-    x: 24,
-    y: 10,
-  },
-  {
-    x: 23,
-    y: 10,
-  },
-  {
-    x: 22,
-    y: 10,
-  },
-  {
-    x: 21,
-    y: 10,
-  },
-  {
-    x: 21,
-    y: 11,
-  },
-  {
-    x: 21,
-    y: 12,
-  },
-];
+class SnakeGame {
+  constructor(
+    container,
+    pxPerSquare,
+    headX,
+    headY,
+    tailCoords,
+    appleX,
+    appleY
+  ) {
+    this.container = container;
+    this.pxPerSquare = pxPerSquare;
 
-// let snake = new Snake(22, 9, tailCoords, pxPerSquare, snakeBox);
-// console.log(snake.containerWidth);
-// console.log(snake.container.offsetWidth);
+    let snake = new Snake(
+      headX,
+      headY,
+      tailCoords,
+      this.pxPerSquare,
+      this.container
+    );
+    this.snake = snake;
 
-// window.addEventListener("resize", function () {
-//   snake = new Snake(5, 5, tailCoords, snakeBox);
-// });
+    let apple = new Apple(appleX, appleY, this.pxPerSquare, this.container);
+    this.apple = apple;
+
+    this.started = false;
+  }
+
+  start() {
+    if (this.started) return;
+    // console.log("starter");
+    this.started = true;
+    let move = () => this.runGame();
+    this.gameLoop = setInterval(move, 200);
+  }
+
+  stop() {
+    if (!this.started) return;
+    // console.log("stopper");
+    this.started = false;
+    clearInterval(this.gameLoop);
+  }
+
+  runGame() {
+    console.log(this.snake.head);
+    console.log(this.snake.head);
+    this.snake.setMove();
+
+    if (this.snake.tailCrash(this.snake.head.x, this.snake.head.y)) {
+      this.stop();
+    }
+    if (
+      this.apple.x === this.snake.head.x &&
+      this.apple.y === this.snake.head.y
+    ) {
+      this.apple.setRandomPos();
+      this.snake.extendTail();
+    }
+    this.snake.moveSnakeElm(this.snake.head.x, this.snake.head.y);
+  }
+}
 
 // ============================================================
 // Actually moving with keys, not necessary if you want to move any other way
 
 // window.addEventListener("keydown", keyMove);
 
-function keyMove(e, snake) {
-  arrowMove(e, snake);
+function keyMove(e, snakeGame) {
+  arrowMove(e, snakeGame);
   if (![32].includes(e.keyCode)) return;
   e.preventDefault();
   if (e.keyCode === 32) {
-    snake.moving ? snake.stop() : snake.start();
+    snakeGame.started ? snakeGame.stop() : snakeGame.start();
   }
 }
 
-function arrowMove(e, snake) {
+function arrowMove(e, snakeGame) {
   if (![37, 38, 39, 40].includes(e.keyCode)) return;
   e.preventDefault();
   if (e.keyCode === 37) {
     // left
-    snake.setMoveLeft();
+    snakeGame.snake.setMoveLeft();
   } else if (e.keyCode === 38) {
     // up
-    snake.setMoveUp();
+    snakeGame.snake.setMoveUp();
   } else if (e.keyCode === 39) {
     // right
-    snake.setMoveRight();
+    snakeGame.snake.setMoveRight();
   } else if (e.keyCode === 40) {
     // down
-    snake.setMoveDown();
+    snakeGame.snake.setMoveDown();
   }
-  if (!snake.moving) {
-    snake.start();
+  if (!snakeGame.snake.moving) {
+    snakeGame.start();
   }
 }
 
+function runSnakeGame(snake, apple) {}
 // ============================================================
 // Exports
 
-export {
-  Snake,
-  keyMove,
-  snakeBox,
-  snakePartClassCSS,
-  pxPerSquare,
-  SnakePart,
-  Apple,
-};
+export { keyMove, snakeBox, snakePartClassCSS, pxPerSquare, SnakeGame };
