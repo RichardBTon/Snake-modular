@@ -25,11 +25,12 @@ class SnakePart {
     snakeBox.appendChild(part);
     this.elm = part;
 
-    this.move(this.x, this.y);
+    this.moveElm(this.x, this.y);
   }
 
-  move(x, y) {
-    this.setMove(x, y);
+  moveElm(x, y) {
+    this.x = x;
+    this.y = y;
     let windowX = this.x * this.pxPerSquare;
     let windowY = this.y * this.pxPerSquare;
     this.elm.style.left = `${windowX}px`;
@@ -101,9 +102,9 @@ class Snake {
   }
 
   moveSnakeElm(x, y) {
-    this.head.move(x, y);
+    this.head.moveElm(x, y);
     for (var i = 0; i < this.tail.length; i++) {
-      this.tail[i].move(this.head.history[i].x, this.head.history[i].y);
+      this.tail[i].moveElm(this.tail[i].x, this.tail[i].y);
     }
   }
 
@@ -180,9 +181,9 @@ class Apple extends SnakePart {
     this.elm.classList.add("apple");
   }
   setRandomPos() {
-    this.x = Math.floor(Math.random() * this.containerSizeX);
-    this.y = Math.floor(Math.random() * this.containerSizeY);
-    this.move(this.x, this.y);
+    let x = Math.floor(Math.random() * this.containerSizeX);
+    let y = Math.floor(Math.random() * this.containerSizeY);
+    this.setMove(x, y);
   }
 }
 
@@ -212,6 +213,7 @@ class SnakeGame {
     this.apple = apple;
 
     this.started = false;
+    this.tailCrashed = false;
   }
 
   start() {
@@ -230,18 +232,21 @@ class SnakeGame {
   }
 
   runGame() {
-    console.log(this.snake.head);
-    console.log(this.snake.head);
     this.snake.setMove();
-
     if (this.snake.tailCrash(this.snake.head.x, this.snake.head.y)) {
       this.stop();
+      this.tailCrashed = true;
+      return;
     }
     if (
       this.apple.x === this.snake.head.x &&
       this.apple.y === this.snake.head.y
     ) {
       this.apple.setRandomPos();
+      while (this.snake.tailCrash(this.apple.x, this.apple.y)) {
+        this.apple.setRandomPos();
+      }
+      this.apple.moveElm(this.apple.x, this.apple.y);
       this.snake.extendTail();
     }
     this.snake.moveSnakeElm(this.snake.head.x, this.snake.head.y);

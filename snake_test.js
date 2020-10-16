@@ -28,6 +28,9 @@ let tailCoords = [
 let snakeGame = new SnakeGame(snakeBox, pxPerSquare, 5, 5, tailCoords, 8, 5);
 
 window.addEventListener("keydown", (e) => {
+  if (snakeGame.tailCrashed) {
+    return;
+  }
   keyMove(e, snakeGame);
   if (e.keyCode === 13) {
     snakeGame.snake.removeSnake();
